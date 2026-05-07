@@ -3,201 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GeoMaster Pro</title>
+    <title>GeoMaster - Mapa Real</title>
     <style>
         :root {
-            --water: #1a2634;
-            --land: #cfd8dc;
-            --accent: #00bcd4;
-            --correct: #4caf50;
-            --wrong: #f44336;
-            --selected: #ffeb3b;
+            --accent: #3498db;
+            --correct: #2ecc71;
+            --wrong: #e74c3c;
         }
 
         body {
-            margin: 0; font-family: 'Segoe UI', Roboto, sans-serif;
-            background: var(--water); color: white;
+            margin: 0; font-family: sans-serif; background: #1a1a1a; color: white;
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
         header {
-            padding: 20px; text-align: center; background: rgba(0,0,0,0.4);
-            border-bottom: 2px solid var(--accent); z-index: 10;
+            padding: 15px; text-align: center; background: #2c3e50; z-index: 10;
         }
 
-        #target-country {
-            display: block; font-size: 1.8rem; font-weight: 800; color: var(--accent);
-            text-transform: uppercase; margin-top: 5px;
+        #target-name {
+            display: block; font-size: 1.5rem; font-weight: bold; color: var(--accent);
         }
 
-        #game-canvas {
+        #viewport {
             flex: 1; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
 
+        /* CAPA DEL MAPA (IMAGEN REAL) */
         #map-container {
-            width: 100%; height: 100%;
-            transition: transform 0.6s cubic-bezier(0.15, 1, 0.3, 1);
-            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            width: 800px; /* Tamaño base */
+            height: 600px;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Europe_political_map_blank.svg/800px-Europe_political_map_blank.svg.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: transform 0.5s ease;
         }
 
-        svg {
-            width: 90%; height: 90%;
-            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
-        }
-
-        /* Estilo de los países reales */
-        .country {
-            fill: var(--land);
-            stroke: #455a64;
-            stroke-width: 0.5;
-            transition: fill 0.2s, stroke-width 0.2s;
+        /* CAPA DE INTERACCIÓN (TRANSPARENTE) */
+        .touch-zone {
+            position: absolute;
+            background: rgba(255, 255, 255, 0); /* Invisible */
+            border: 1px solid rgba(0,0,0,0.1);
             cursor: pointer;
-            pointer-events: all;
         }
 
-        /* Estratagema: Panel de Confirmación Flotante */
-        #confirm-panel {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: white; color: #333; padding: 20px; border-radius: 25px;
-            display: none; flex-direction: column; align-items: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; width: 280px;
+        .touch-zone:active {
+            background: rgba(52, 152, 219, 0.3);
         }
 
-        .btn-group { display: flex; gap: 15px; width: 100%; margin-top: 15px; }
-        .btn {
-            flex: 1; border: none; padding: 12px; border-radius: 12px;
-            font-weight: bold; font-size: 1rem; cursor: pointer; color: white;
+        /* PANEL MÓVIL */
+        #confirm-ui {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: white; color: #333; padding: 15px; border-radius: 20px;
+            display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 100;
         }
-        .btn-yes { background: var(--correct); }
+
+        .btn { border: none; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; }
+        .btn-ok { background: var(--correct); }
         .btn-no { background: var(--wrong); }
-
-        #alert {
-            position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
-            padding: 12px 25px; border-radius: 8px; font-weight: bold;
-            display: none; z-index: 50; animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <header>
-    Toca el mapa para situar:
-    <span id="target-country">Cargando...</span>
+    ¿Dónde está? <span id="target-name">...</span>
 </header>
 
-<div id="alert"></div>
-
-<div id="game-canvas">
-    <div id="map-container">
-        <svg viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
-            <g id="europe-map">
-                <path id="es" data-name="España" class="country" d="M145,640 L160,620 L200,615 L250,625 L265,660 L245,710 L210,725 L140,720 L125,660 Z" />
-                <path id="pt" data-name="Portugal" class="country" d="M125,660 L145,640 L140,720 L120,720 Z" />
-                <path id="fr" data-name="Francia" class="country" d="M250,625 L230,530 L270,500 L350,510 L380,550 L395,600 L350,650 L265,660 Z" />
-                <path id="it" data-name="Italia" class="country" d="M395,600 L430,600 L460,670 L520,780 L480,800 L440,750 L455,670 L410,630 Z" />
-                <path id="de" data-name="Alemania" class="country" d="M350,510 L430,500 L460,370 L400,350 L350,380 Z" />
-                <path id="gb" data-name="Reino Unido" class="country" d="M210,450 L260,410 L250,310 L200,280 L180,350 L195,410 Z" />
-                <path id="no" data-name="Noruega" class="country" d="M400,350 L440,230 L480,80 L520,50 L560,120 L460,370 Z" />
-                
-                <circle id="ad" data-name="Andorra" class="country" cx="258" cy="630" r="8" />
-                <circle id="lu" data-name="Luxemburgo" class="country" cx="355" cy="515" r="7" />
-                <circle id="va" data-name="Vaticano" class="country" cx="445" cy="675" r="6" />
-            </g>
-        </svg>
+<div id="viewport">
+    <div id="map-container" id="map">
+        <div class="touch-zone" data-id="es" data-name="España" style="top: 73%; left: 12%; width: 12%; height: 12%;"></div>
+        <div class="touch-zone" data-id="fr" data-name="Francia" style="top: 58%; left: 23%; width: 12%; height: 12%;"></div>
+        <div class="touch-zone" data-id="it" data-name="Italia" style="top: 68%; left: 38%; width: 8%; height: 15%;"></div>
+        <div class="touch-zone" data-id="gb" data-name="Reino Unido" style="top: 40%; left: 18%; width: 8%; height: 12%;"></div>
+        <div class="touch-zone" data-id="de" data-name="Alemania" style="top: 48%; left: 35%; width: 8%; height: 10%;"></div>
+        <div class="touch-zone" data-id="no" data-name="Noruega" style="top: 15%; left: 38%; width: 5%; height: 25%;"></div>
+        
+        <div class="touch-zone" data-id="ad" data-name="Andorra" style="top: 71%; left: 24.5%; width: 4%; height: 4%; border-radius: 50%; border: 2px solid gold;"></div>
     </div>
 
-    <div id="confirm-panel">
-        <div id="selection-label" style="font-size: 1.2rem; font-weight: bold;"></div>
-        <div class="btn-group">
-            <button class="btn btn-no" onclick="cancelAction()">NO</button>
-            <button class="btn btn-yes" onclick="verifyAction()">SÍ, ES AQUÍ</button>
+    <div id="confirm-ui">
+        <div id="selection-text"></div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-no" onclick="deselect()">NO</button>
+            <button class="btn btn-ok" onclick="check()">SÍ</button>
         </div>
     </div>
 </div>
 
 <script>
     const countries = [
-        {id: 'es', name: 'España'}, {id: 'fr', name: 'Francia'},
-        {id: 'it', name: 'Italia'}, {id: 'de', name: 'Alemania'},
-        {id: 'pt', name: 'Portugal'}, {id: 'gb', name: 'Reino Unido'},
-        {id: 'no', name: 'Noruega'}, {id: 'ad', name: 'Andorra'},
-        {id: 'lu', name: 'Luxemburgo'}, {id: 'va', name: 'Vaticano'}
+        {id:'es', name:'España'}, {id:'fr', name:'Francia'},
+        {id:'it', name:'Italia'}, {id:'gb', name:'Reino Unido'},
+        {id:'de', name:'Alemania'}, {id:'ad', name:'Andorra'}
     ];
 
-    let currentTarget = null;
-    let selectedEl = null;
+    let target = null;
+    let selected = null;
     const container = document.getElementById('map-container');
-    const panel = document.getElementById('confirm-panel');
 
-    function initGame() {
-        currentTarget = countries[Math.floor(Math.random() * countries.length)];
-        document.getElementById('target-country').innerText = currentTarget.name;
+    function init() {
+        target = countries[Math.floor(Math.random() * countries.length)];
+        document.getElementById('target-name').innerText = target.name;
         
-        document.querySelectorAll('.country').forEach(el => {
-            el.onclick = (e) => {
-                e.stopPropagation();
-                handleSelection(el);
+        document.querySelectorAll('.touch-zone').forEach(zone => {
+            zone.onclick = (e) => {
+                selected = { id: zone.dataset.id, name: zone.dataset.name };
+                
+                // LA ESTRATAGEMA: ZOOM AL CENTRO DE LA ZONA DE TOQUE
+                const top = parseFloat(zone.style.top);
+                const left = parseFloat(zone.style.left);
+                container.style.transformOrigin = `${left}% ${top}%`;
+                container.style.transform = "scale(2.5)";
+                
+                document.getElementById('selection-text').innerText = "¿Es " + selected.name + "?";
+                document.getElementById('confirm-ui').style.display = "block";
             };
         });
     }
 
-    function handleSelection(el) {
-        if (selectedEl) selectedEl.style.fill = "";
-        selectedEl = el;
-        selectedEl.style.fill = "var(--selected)";
-
-        // --- LA ESTRATAGEMA DE PRECISIÓN ---
-        const bbox = el.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        
-        // Zoom inteligente: si es un país pequeño (círculo), zoom máximo
-        const zoom = (el.tagName === 'circle') ? 5 : 2.5;
-
-        container.style.transformOrigin = `${centerX}px ${centerY}px`;
-        container.style.transform = `scale(${zoom})`;
-
-        document.getElementById('selection-label').innerText = "¿Es " + el.getAttribute('data-name') + "?";
-        panel.style.display = "flex";
-    }
-
-    function verifyAction() {
-        if (selectedEl.id === currentTarget.id) {
-            showAlert("¡CORRECTO!", "var(--correct)");
-            selectedEl.style.fill = "var(--correct)";
-            setTimeout(resetRound, 1000);
+    function check() {
+        if (selected.id === target.id) {
+            alert("¡Correcto!");
+            deselect();
+            init();
         } else {
-            showAlert("NO, ES " + selectedEl.getAttribute('data-name').toUpperCase(), "var(--wrong)");
-            selectedEl.style.fill = "var(--wrong)";
-            setTimeout(cancelAction, 1000);
+            alert("No, ese es " + selected.name);
+            deselect();
         }
-        panel.style.display = "none";
     }
 
-    function cancelAction() {
-        if (selectedEl) selectedEl.style.fill = "";
-        selectedEl = null;
-        panel.style.display = "none";
+    function deselect() {
         container.style.transform = "scale(1)";
+        document.getElementById('confirm-ui').style.display = "none";
     }
 
-    function resetRound() {
-        cancelAction();
-        initGame();
-    }
-
-    function showAlert(txt, color) {
-        const a = document.getElementById('alert');
-        a.innerText = txt;
-        a.style.backgroundColor = color;
-        a.style.display = "block";
-        setTimeout(() => a.style.display = "none", 2000);
-    }
-
-    initGame();
+    init();
 </script>
 </body>
 </html>
