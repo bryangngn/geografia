@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GeoMaster Europa - Real</title>
+    <title>GeoMaster Siluetas Real</title>
     <style>
         :root {
-            --water: #1a2b3c;
-            --land: #e0e0e0;
+            --water: #1a2a3a;
+            --land: #dfe6e9;
             --accent: #3498db;
             --correct: #2ecc71;
             --wrong: #e74c3c;
@@ -27,7 +27,6 @@
 
         #target-name {
             display: block; font-size: 1.6rem; font-weight: 900; color: var(--accent);
-            text-transform: uppercase;
         }
 
         #game-viewport {
@@ -46,13 +45,13 @@
             filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
         }
 
-        /* ESTILO DE LOS PAÍSES REALES */
+        /* ESTILO DE LAS SILUETAS REALES */
         .country {
             fill: var(--land);
             stroke: #2c3e50;
-            stroke-width: 0.8;
-            cursor: pointer;
+            stroke-width: 0.5;
             transition: fill 0.2s;
+            cursor: pointer;
             pointer-events: all;
         }
 
@@ -77,31 +76,31 @@
 
 <header>
     ¿DÓNDE ESTÁ?
-    <span id="target-name">...</span>
+    <span id="target-name">CARGANDO...</span>
 </header>
 
 <div id="game-viewport">
     <div id="map-wrapper">
-        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-            <g id="europe-detailed">
-                <path id="es" data-name="España" class="country" d="M120,450 L145,435 L190,430 L220,435 L245,450 L250,480 L235,520 L200,535 L140,530 L115,500 L110,470 Z" />
-                <path id="pt" data-name="Portugal" class="country" d="M110,470 L125,445 L135,445 L140,530 L115,530 Z" />
-                <path id="fr" data-name="Francia" class="country" d="M220,435 L205,380 L230,340 L260,320 L310,330 L340,360 L355,420 L310,460 L245,450 Z" />
-                <path id="it" data-name="Italia" class="country" d="M340,415 L370,410 L395,470 L440,540 L460,570 L430,585 L390,550 L405,480 L355,435 Z" />
-                <path id="gb" data-name="Reino Unido" class="country" d="M195,330 L230,300 L240,250 L220,210 L185,230 L175,280 Z" />
-                <path id="ie" data-name="Irlanda" class="country" d="M140,290 L170,270 L170,320 L145,330 Z" />
-                <path id="de" data-name="Alemania" class="country" d="M310,330 L370,320 L390,260 L340,245 L305,270 Z" />
-                <path id="no" data-name="Noruega" class="country" d="M340,245 L370,180 L400,100 L430,60 L450,110 L390,260 Z" />
+        <svg viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+            <g id="europe-paths">
+                <path id="es" data-name="España" class="country" d="M165,648l16-24l40-7l56,14l18,59l-23,65l-121-17l-19-54L165,648z" />
+                <path id="pt" data-name="Portugal" class="country" d="M127,683l38-35l18,87l-37,1l-19-53z" />
+                <path id="fr" data-name="Francia" class="country" d="M277,631l-28-16l20-105l46-57l113,22l25,89l-53,73L277,631z" />
+                <path id="it" data-name="Italia" class="country" d="M446,586l44,0l41,113l53,129l-54,42l-56-41l21-133L446,586z" />
+                <path id="gb" data-name="Reino Unido" class="country" d="M210,396l75-54l-11-113l-65-35l-32,89L210,396z" />
+                <path id="de" data-name="Alemania" class="country" d="M408,476l109-24l31-178l-93-22l-54,43L408,476z" />
+                <path id="no" data-name="Noruega" class="country" d="M456,253l54-89l33-169l43-49l33,89l-109,218L456,253z" />
+                <path id="gr" data-name="Grecia" class="country" d="M660,771l56,0l18,86l-43,22l-54-54L660,771z" />
                 
-                <circle id="ad" data-name="Andorra" class="country" cx="232" cy="438" r="6" />
-                <circle id="lu" data-name="Luxemburgo" class="country" cx="312" cy="335" r="6" />
-                <circle id="va" data-name="Vaticano" class="country" cx="400" cy="495" r="5" />
+                <circle id="ad" data-name="Andorra" class="country" cx="280" cy="635" r="8" />
+                <circle id="lu" data-name="Luxemburgo" class="country" cx="403" cy="482" r="7" />
+                <circle id="va" data-name="Vaticano" class="country" cx="496" cy="708" r="6" />
             </g>
         </svg>
     </div>
 
     <div id="ui-confirm">
-        <div id="selection-text">¿Es este país?</div>
+        <div id="selection-text"></div>
         <div class="btn-group">
             <button class="btn btn-no" onclick="cancelSelection()">NO</button>
             <button class="btn btn-ok" onclick="checkSelection()">SÍ</button>
@@ -113,8 +112,8 @@
     const countries = [
         {id: 'es', name: 'España'}, {id: 'fr', name: 'Francia'},
         {id: 'it', name: 'Italia'}, {id: 'de', name: 'Alemania'},
-        {id: 'pt', name: 'Portugal'}, {id: 'gb', name: 'Reino Unido'},
-        {id: 'no', name: 'Noruega'}, {id: 'ad', name: 'Andorra'},
+        {id: 'gb', name: 'Reino Unido'}, {id: 'no', name: 'Noruega'},
+        {id: 'pt', name: 'Portugal'}, {id: 'ad', name: 'Andorra'},
         {id: 'va', name: 'Vaticano'}
     ];
 
@@ -145,7 +144,6 @@
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Zoom muy fuerte si es un país pequeño
         const isSmall = (el.tagName === 'circle');
         const zoom = isSmall ? 5 : 2.5;
 
@@ -160,9 +158,9 @@
         if (selectedEl.id === target.id) {
             alert("¡CORRECTO!");
             selectedEl.style.fill = "var(--correct)";
-            setTimeout(resetGame, 1000);
+            setTimeout(resetGame, 800);
         } else {
-            alert("NO, ESE ES " + selectedEl.getAttribute('data-name').toUpperCase());
+            alert("Ese es " + selectedEl.getAttribute('data-name'));
             cancelSelection();
         }
     }
