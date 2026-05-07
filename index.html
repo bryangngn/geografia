@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GeoMaster Pro - Europa</title>
+    <title>GeoMaster - Europa</title>
     <style>
         :root {
-            --water: #1a2a3a;
-            --land: #d1d8e0;
-            --accent: #3498db;
-            --correct: #2ecc71;
+            --water: #243447;
+            --land: #e1e8ed;
+            --accent: #1da1f2;
+            --correct: #27ae60;
             --wrong: #e74c3c;
             --selected: #f1c40f;
         }
@@ -21,178 +21,161 @@
         }
 
         header {
-            padding: 15px; text-align: center; background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px); z-index: 10; border-bottom: 2px solid var(--accent);
+            padding: 15px; text-align: center; background: rgba(0,0,0,0.8);
+            z-index: 10; border-bottom: 2px solid var(--accent);
         }
 
-        #target-name {
-            display: block; font-size: 1.8rem; font-weight: 900;
-            color: var(--accent); text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        #target-display {
+            display: block; font-size: 1.6rem; font-weight: 900; color: var(--accent);
         }
 
-        #game-viewport {
+        #viewport {
             flex: 1; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
 
-        #map-container {
+        #map-scroll {
             width: 100%; height: 100%;
-            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1);
             display: flex; align-items: center; justify-content: center;
         }
 
         svg {
-            width: 95%; height: 95%;
-            touch-action: none;
+            width: 90%; height: 90%;
+            max-height: 80vh;
         }
 
-        /* Estilo de los países */
-        path {
+        .country {
             fill: var(--land);
-            stroke: #333;
-            stroke-width: 0.5;
+            stroke: #2c3e50;
+            stroke-width: 1;
             transition: fill 0.3s;
             cursor: pointer;
-            pointer-events: all;
+            -webkit-tap-highlight-color: transparent;
         }
 
+        /* UI de Confirmación */
         #ui-confirm {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: white; color: #333; padding: 20px; border-radius: 25px;
+            background: white; color: #333; padding: 15px 25px; border-radius: 25px;
             display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 100; text-align: center; width: 80%; max-width: 300px;
         }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-box { display: flex; gap: 10px; margin-top: 10px; }
         .btn {
-            flex: 1; border: none; padding: 12px; border-radius: 15px;
-            font-weight: bold; cursor: pointer; color: white;
+            flex: 1; border: none; padding: 12px; border-radius: 12px;
+            font-weight: bold; font-size: 1rem; color: white;
         }
-        .btn-ok { background: var(--correct); }
+        .btn-yes { background: var(--correct); }
         .btn-no { background: var(--wrong); }
-
-        #msg {
-            position: absolute; top: 110px; left: 50%; transform: translateX(-50%);
-            padding: 10px 20px; border-radius: 10px; font-weight: bold; display: none; z-index: 50;
-        }
     </style>
 </head>
 <body>
 
 <header>
-    ¿Dónde está?
-    <span id="target-name">CARGANDO...</span>
+    Localiza el país:
+    <span id="target-display">Cargando...</span>
 </header>
 
-<div id="msg"></div>
-
-<div id="game-viewport">
-    <div id="map-container">
-        <svg viewBox="0 0 1000 750" id="europe-svg">
-            <g id="countries-group">
-                <path id="es" data-name="España" d="M140,580 L180,560 L240,570 L260,620 L240,680 L160,700 L120,680 L110,620 Z" />
-                <path id="pt" data-name="Portugal" d="M110,620 L130,600 L135,690 L110,695 Z" />
-                <path id="fr" data-name="Francia" d="M240,570 L230,480 L280,450 L380,470 L400,550 L340,620 L260,620 Z" />
-                <path id="it" data-name="Italia" d="M380,550 L430,550 L460,620 L520,740 L480,770 L430,730 L450,620 L400,580 Z" />
-                <path id="de" data-name="Alemania" d="M380,470 L340,430 L350,330 L450,320 L480,450 Z" />
-                <path id="gb" data-name="Reino Unido" d="M220,400 L280,350 L270,260 L200,240 L180,330 Z" />
-                <path id="ie" data-name="Irlanda" d="M130,350 L170,320 L165,390 L130,395 Z" />
-                <path id="no" data-name="Noruega" d="M380,320 L420,180 L480,50 L530,20 L580,100 L450,320 Z" />
-                <path id="gr" data-name="Grecia" d="M550,680 L620,680 L640,770 L600,790 L550,750 Z" />
+<div id="viewport">
+    <div id="map-scroll">
+        <svg viewBox="0 0 800 600" id="europe-svg">
+            <g id="main-map">
+                <path id="es" data-name="España" class="country" d="M110,430 L185,410 L230,425 L245,460 L230,520 L130,510 L100,470 Z" />
+                <path id="pt" data-name="Portugal" class="country" d="M100,470 L125,435 L130,510 L105,510 Z" />
+                <path id="fr" data-name="Francia" class="country" d="M230,425 L215,350 L250,310 L340,325 L360,400 L310,460 L245,460 Z" />
+                <path id="it" data-name="Italia" class="country" d="M345,405 L380,405 L410,480 L460,570 L420,590 L380,550 L400,470 L355,425 Z" />
+                <path id="gb" data-name="Reino Unido" class="country" d="M190,300 L235,270 L245,210 L210,180 L180,210 L185,260 Z" />
+                <path id="ie" data-name="Irlanda" class="country" d="M140,270 L175,250 L170,300 L145,305 Z" />
+                <path id="de" data-name="Alemania" class="country" d="M320,320 L375,310 L400,240 L350,225 L320,260 Z" />
+                <path id="no" data-name="Noruega" class="country" d="M350,225 L380,140 L420,60 L450,40 L480,110 L390,240 Z" />
                 
-                <circle id="ad" data-name="Andorra" cx="245" cy="575" r="7" />
-                <circle id="lu" data-name="Luxemburgo" cx="375" cy="475" r="7" />
-                <circle id="va" data-name="Vaticano" cx="445" cy="630" r="6" />
+                <circle id="ad" data-name="Andorra" class="country" cx="232" cy="428" r="7" />
+                <circle id="lu" data-name="Luxemburgo" class="country" cx="325" cy="328" r="6" />
+                <circle id="va" data-name="Vaticano" class="country" cx="395" cy="485" r="5" />
             </g>
         </svg>
     </div>
 
     <div id="ui-confirm">
-        <div id="selection-text">¿Es este país?</div>
-        <div class="btn-group">
+        <div id="confirm-text">¿Es este país?</div>
+        <div class="btn-box">
             <button class="btn btn-no" onclick="cancelSelection()">NO</button>
-            <button class="btn btn-ok" onclick="checkSelection()">SÍ</button>
+            <button class="btn btn-yes" onclick="checkAnswer()">SÍ</button>
         </div>
     </div>
 </div>
 
 <script>
-    const container = document.getElementById('map-container');
-    const ui = document.getElementById('ui-confirm');
-    const targetLabel = document.getElementById('target-name');
-    
-    let selectedElement = null;
-    let currentCountryObj = null;
-
     const countries = [
-        { id: 'fr', name: 'Francia' }, { id: 'es', name: 'España' },
-        { id: 'it', name: 'Italia' }, { id: 'de', name: 'Alemania' },
-        { id: 'pt', name: 'Portugal' }, { id: 'gb', name: 'Reino Unido' },
-        { id: 'ie', name: 'Irlanda' }, { id: 'no', name: 'Noruega' },
-        { id: 'ad', name: 'Andorra' }, { id: 'va', name: 'Vaticano' }
+        {id: 'es', name: 'España'}, {id: 'fr', name: 'Francia'},
+        {id: 'it', name: 'Italia'}, {id: 'pt', name: 'Portugal'},
+        {id: 'gb', name: 'Reino Unido'}, {id: 'de', name: 'Alemania'},
+        {id: 'no', name: 'Noruega'}, {id: 'ad', name: 'Andorra'},
+        {id: 'lu', name: 'Luxemburgo'}, {id: 'va', name: 'Vaticano'}
     ];
 
+    let target = null;
+    let selected = null;
+    const mapScroll = document.getElementById('map-scroll');
+    const ui = document.getElementById('ui-confirm');
+
     function init() {
-        const paths = document.querySelectorAll('path, circle');
-        paths.forEach(p => {
-            p.onclick = (e) => {
+        target = countries[Math.floor(Math.random() * countries.length)];
+        document.getElementById('target-display').innerText = target.name;
+        
+        document.querySelectorAll('.country').forEach(el => {
+            el.onclick = (e) => {
                 e.stopPropagation();
-                highlight(p);
+                selectCountry(el);
             };
         });
-        nextQuestion();
     }
 
-    function highlight(el) {
-        if (selectedElement) selectedElement.style.fill = "";
-        selectedElement = el;
-        selectedElement.style.fill = "var(--selected)";
-
-        // ESTRATAGEMA MOVIL: Zoom centrado
+    function selectCountry(el) {
+        if (selected) selected.style.fill = "";
+        selected = el;
+        selected.style.fill = "var(--selected)";
+        
+        // ESTRATAGEMA: ZOOM Y CENTRADO
         const bbox = el.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        const zoom = bbox.width < 25 ? 4 : 2;
+        
+        // Zoom agresivo para países pequeños (Andorra, Vaticano...)
+        const isSmall = (el.tagName === 'circle' || bbox.width < 20);
+        const zoomScale = isSmall ? 5 : 2.2;
 
-        container.style.transformOrigin = `${centerX}px ${centerY}px`;
-        container.style.transform = `scale(${zoom})`;
+        mapScroll.style.transformOrigin = `${centerX}px ${centerY}px`;
+        mapScroll.style.transform = `scale(${zoomScale})`;
 
-        document.getElementById('selection-text').innerText = "¿Es " + el.getAttribute('data-name') + "?";
+        document.getElementById('confirm-text').innerText = "¿Es " + el.getAttribute('data-name') + "?";
         ui.style.display = "block";
     }
 
-    function checkSelection() {
-        if (selectedElement.id === currentCountryObj.id) {
-            showMsg("¡CORRECTO!", "var(--correct)");
-            selectedElement.style.fill = "var(--correct)";
-            setTimeout(nextQuestion, 1200);
+    function checkAnswer() {
+        if (selected.id === target.id) {
+            selected.style.fill = "var(--correct)";
+            alert("¡Excelente! Es " + target.name);
+            setTimeout(resetGame, 500);
         } else {
-            showMsg("No, es " + selectedElement.getAttribute('data-name'), "var(--wrong)");
-            selectedElement.style.fill = "var(--wrong)";
-            setTimeout(cancelSelection, 1000);
+            selected.style.fill = "var(--wrong)";
+            alert("Oops... ese es " + selected.getAttribute('data-name'));
+            cancelSelection();
         }
-        ui.style.display = "none";
     }
 
     function cancelSelection() {
-        if (selectedElement) selectedElement.style.fill = "";
-        selectedElement = null;
+        if (selected) selected.style.fill = "";
+        selected = null;
         ui.style.display = "none";
-        container.style.transform = "scale(1)";
+        mapScroll.style.transform = "scale(1)";
     }
 
-    function nextQuestion() {
-        currentCountryObj = countries[Math.floor(Math.random() * countries.length)];
-        targetLabel.innerText = currentCountryObj.name;
+    function resetGame() {
         cancelSelection();
-    }
-
-    function showMsg(txt, color) {
-        const m = document.getElementById('msg');
-        m.innerText = txt;
-        m.style.backgroundColor = color;
-        m.style.display = "block";
-        setTimeout(() => m.style.display = "none", 1500);
+        init();
     }
 
     init();
