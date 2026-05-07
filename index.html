@@ -3,106 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GeoMaster - Europa</title>
+    <title>GeoMaster Pro</title>
     <style>
         :root {
-            --water: #243447;
-            --land: #e1e8ed;
-            --accent: #1da1f2;
-            --correct: #27ae60;
-            --wrong: #e74c3c;
-            --selected: #f1c40f;
+            --water: #1a2634;
+            --land: #cfd8dc;
+            --accent: #00bcd4;
+            --correct: #4caf50;
+            --wrong: #f44336;
+            --selected: #ffeb3b;
         }
 
         body {
-            margin: 0; font-family: 'Segoe UI', sans-serif;
+            margin: 0; font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--water); color: white;
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
         header {
-            padding: 15px; text-align: center; background: rgba(0,0,0,0.8);
-            z-index: 10; border-bottom: 2px solid var(--accent);
+            padding: 20px; text-align: center; background: rgba(0,0,0,0.4);
+            border-bottom: 2px solid var(--accent); z-index: 10;
         }
 
-        #target-display {
-            display: block; font-size: 1.6rem; font-weight: 900; color: var(--accent);
+        #target-country {
+            display: block; font-size: 1.8rem; font-weight: 800; color: var(--accent);
+            text-transform: uppercase; margin-top: 5px;
         }
 
-        #viewport {
+        #game-canvas {
             flex: 1; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
 
-        #map-scroll {
+        #map-container {
             width: 100%; height: 100%;
-            transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            transition: transform 0.6s cubic-bezier(0.15, 1, 0.3, 1);
             display: flex; align-items: center; justify-content: center;
         }
 
         svg {
             width: 90%; height: 90%;
-            max-height: 80vh;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
         }
 
+        /* Estilo de los países reales */
         .country {
             fill: var(--land);
-            stroke: #2c3e50;
-            stroke-width: 1;
-            transition: fill 0.3s;
+            stroke: #455a64;
+            stroke-width: 0.5;
+            transition: fill 0.2s, stroke-width 0.2s;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            pointer-events: all;
         }
 
-        /* UI de Confirmación */
-        #ui-confirm {
+        /* Estratagema: Panel de Confirmación Flotante */
+        #confirm-panel {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: white; color: #333; padding: 15px 25px; border-radius: 25px;
-            display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 100; text-align: center; width: 80%; max-width: 300px;
+            background: white; color: #333; padding: 20px; border-radius: 25px;
+            display: none; flex-direction: column; align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; width: 280px;
         }
 
-        .btn-box { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-group { display: flex; gap: 15px; width: 100%; margin-top: 15px; }
         .btn {
             flex: 1; border: none; padding: 12px; border-radius: 12px;
-            font-weight: bold; font-size: 1rem; color: white;
+            font-weight: bold; font-size: 1rem; cursor: pointer; color: white;
         }
         .btn-yes { background: var(--correct); }
         .btn-no { background: var(--wrong); }
+
+        #alert {
+            position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+            padding: 12px 25px; border-radius: 8px; font-weight: bold;
+            display: none; z-index: 50; animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <header>
-    Localiza el país:
-    <span id="target-display">Cargando...</span>
+    Toca el mapa para situar:
+    <span id="target-country">Cargando...</span>
 </header>
 
-<div id="viewport">
-    <div id="map-scroll">
-        <svg viewBox="0 0 800 600" id="europe-svg">
-            <g id="main-map">
-                <path id="es" data-name="España" class="country" d="M110,430 L185,410 L230,425 L245,460 L230,520 L130,510 L100,470 Z" />
-                <path id="pt" data-name="Portugal" class="country" d="M100,470 L125,435 L130,510 L105,510 Z" />
-                <path id="fr" data-name="Francia" class="country" d="M230,425 L215,350 L250,310 L340,325 L360,400 L310,460 L245,460 Z" />
-                <path id="it" data-name="Italia" class="country" d="M345,405 L380,405 L410,480 L460,570 L420,590 L380,550 L400,470 L355,425 Z" />
-                <path id="gb" data-name="Reino Unido" class="country" d="M190,300 L235,270 L245,210 L210,180 L180,210 L185,260 Z" />
-                <path id="ie" data-name="Irlanda" class="country" d="M140,270 L175,250 L170,300 L145,305 Z" />
-                <path id="de" data-name="Alemania" class="country" d="M320,320 L375,310 L400,240 L350,225 L320,260 Z" />
-                <path id="no" data-name="Noruega" class="country" d="M350,225 L380,140 L420,60 L450,40 L480,110 L390,240 Z" />
+<div id="alert"></div>
+
+<div id="game-canvas">
+    <div id="map-container">
+        <svg viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+            <g id="europe-map">
+                <path id="es" data-name="España" class="country" d="M145,640 L160,620 L200,615 L250,625 L265,660 L245,710 L210,725 L140,720 L125,660 Z" />
+                <path id="pt" data-name="Portugal" class="country" d="M125,660 L145,640 L140,720 L120,720 Z" />
+                <path id="fr" data-name="Francia" class="country" d="M250,625 L230,530 L270,500 L350,510 L380,550 L395,600 L350,650 L265,660 Z" />
+                <path id="it" data-name="Italia" class="country" d="M395,600 L430,600 L460,670 L520,780 L480,800 L440,750 L455,670 L410,630 Z" />
+                <path id="de" data-name="Alemania" class="country" d="M350,510 L430,500 L460,370 L400,350 L350,380 Z" />
+                <path id="gb" data-name="Reino Unido" class="country" d="M210,450 L260,410 L250,310 L200,280 L180,350 L195,410 Z" />
+                <path id="no" data-name="Noruega" class="country" d="M400,350 L440,230 L480,80 L520,50 L560,120 L460,370 Z" />
                 
-                <circle id="ad" data-name="Andorra" class="country" cx="232" cy="428" r="7" />
-                <circle id="lu" data-name="Luxemburgo" class="country" cx="325" cy="328" r="6" />
-                <circle id="va" data-name="Vaticano" class="country" cx="395" cy="485" r="5" />
+                <circle id="ad" data-name="Andorra" class="country" cx="258" cy="630" r="8" />
+                <circle id="lu" data-name="Luxemburgo" class="country" cx="355" cy="515" r="7" />
+                <circle id="va" data-name="Vaticano" class="country" cx="445" cy="675" r="6" />
             </g>
         </svg>
     </div>
 
-    <div id="ui-confirm">
-        <div id="confirm-text">¿Es este país?</div>
-        <div class="btn-box">
-            <button class="btn btn-no" onclick="cancelSelection()">NO</button>
-            <button class="btn btn-yes" onclick="checkAnswer()">SÍ</button>
+    <div id="confirm-panel">
+        <div id="selection-label" style="font-size: 1.2rem; font-weight: bold;"></div>
+        <div class="btn-group">
+            <button class="btn btn-no" onclick="cancelAction()">NO</button>
+            <button class="btn btn-yes" onclick="verifyAction()">SÍ, ES AQUÍ</button>
         </div>
     </div>
 </div>
@@ -110,75 +121,83 @@
 <script>
     const countries = [
         {id: 'es', name: 'España'}, {id: 'fr', name: 'Francia'},
-        {id: 'it', name: 'Italia'}, {id: 'pt', name: 'Portugal'},
-        {id: 'gb', name: 'Reino Unido'}, {id: 'de', name: 'Alemania'},
+        {id: 'it', name: 'Italia'}, {id: 'de', name: 'Alemania'},
+        {id: 'pt', name: 'Portugal'}, {id: 'gb', name: 'Reino Unido'},
         {id: 'no', name: 'Noruega'}, {id: 'ad', name: 'Andorra'},
         {id: 'lu', name: 'Luxemburgo'}, {id: 'va', name: 'Vaticano'}
     ];
 
-    let target = null;
-    let selected = null;
-    const mapScroll = document.getElementById('map-scroll');
-    const ui = document.getElementById('ui-confirm');
+    let currentTarget = null;
+    let selectedEl = null;
+    const container = document.getElementById('map-container');
+    const panel = document.getElementById('confirm-panel');
 
-    function init() {
-        target = countries[Math.floor(Math.random() * countries.length)];
-        document.getElementById('target-display').innerText = target.name;
+    function initGame() {
+        currentTarget = countries[Math.floor(Math.random() * countries.length)];
+        document.getElementById('target-country').innerText = currentTarget.name;
         
         document.querySelectorAll('.country').forEach(el => {
             el.onclick = (e) => {
                 e.stopPropagation();
-                selectCountry(el);
+                handleSelection(el);
             };
         });
     }
 
-    function selectCountry(el) {
-        if (selected) selected.style.fill = "";
-        selected = el;
-        selected.style.fill = "var(--selected)";
-        
-        // ESTRATAGEMA: ZOOM Y CENTRADO
+    function handleSelection(el) {
+        if (selectedEl) selectedEl.style.fill = "";
+        selectedEl = el;
+        selectedEl.style.fill = "var(--selected)";
+
+        // --- LA ESTRATAGEMA DE PRECISIÓN ---
         const bbox = el.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Zoom agresivo para países pequeños (Andorra, Vaticano...)
-        const isSmall = (el.tagName === 'circle' || bbox.width < 20);
-        const zoomScale = isSmall ? 5 : 2.2;
+        // Zoom inteligente: si es un país pequeño (círculo), zoom máximo
+        const zoom = (el.tagName === 'circle') ? 5 : 2.5;
 
-        mapScroll.style.transformOrigin = `${centerX}px ${centerY}px`;
-        mapScroll.style.transform = `scale(${zoomScale})`;
+        container.style.transformOrigin = `${centerX}px ${centerY}px`;
+        container.style.transform = `scale(${zoom})`;
 
-        document.getElementById('confirm-text').innerText = "¿Es " + el.getAttribute('data-name') + "?";
-        ui.style.display = "block";
+        document.getElementById('selection-label').innerText = "¿Es " + el.getAttribute('data-name') + "?";
+        panel.style.display = "flex";
     }
 
-    function checkAnswer() {
-        if (selected.id === target.id) {
-            selected.style.fill = "var(--correct)";
-            alert("¡Excelente! Es " + target.name);
-            setTimeout(resetGame, 500);
+    function verifyAction() {
+        if (selectedEl.id === currentTarget.id) {
+            showAlert("¡CORRECTO!", "var(--correct)");
+            selectedEl.style.fill = "var(--correct)";
+            setTimeout(resetRound, 1000);
         } else {
-            selected.style.fill = "var(--wrong)";
-            alert("Oops... ese es " + selected.getAttribute('data-name'));
-            cancelSelection();
+            showAlert("NO, ES " + selectedEl.getAttribute('data-name').toUpperCase(), "var(--wrong)");
+            selectedEl.style.fill = "var(--wrong)";
+            setTimeout(cancelAction, 1000);
         }
+        panel.style.display = "none";
     }
 
-    function cancelSelection() {
-        if (selected) selected.style.fill = "";
-        selected = null;
-        ui.style.display = "none";
-        mapScroll.style.transform = "scale(1)";
+    function cancelAction() {
+        if (selectedEl) selectedEl.style.fill = "";
+        selectedEl = null;
+        panel.style.display = "none";
+        container.style.transform = "scale(1)";
     }
 
-    function resetGame() {
-        cancelSelection();
-        init();
+    function resetRound() {
+        cancelAction();
+        initGame();
     }
 
-    init();
+    function showAlert(txt, color) {
+        const a = document.getElementById('alert');
+        a.innerText = txt;
+        a.style.backgroundColor = color;
+        a.style.display = "block";
+        setTimeout(() => a.style.display = "none", 2000);
+    }
+
+    initGame();
 </script>
 </body>
 </html>
